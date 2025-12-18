@@ -1,0 +1,321 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USERS ====================
+model User {
+  id                      Int       @id @default(autoincrement())
+  name                    String?   @db.VarChar(255)
+  email                   String    @unique @db.VarChar(255)
+  noTelepon               String?   @map("no_telepon") @db.VarChar(50)
+  password                String    @db.VarChar(255)
+  role                    Role      @default(PENGHUNI)
+  token                   String?   @db.VarChar(255)
+  isActive                Boolean   @default(false) @map("is_active")
+  verificationToken       String?   @map("verification_token") @db.VarChar(255)
+  emailVerifiedAt         DateTime? @map("email_verified_at")
+  resetPasswordToken      String?   @map("reset_password_token") @db.VarChar(255)
+  resetPasswordExpiresAt  DateTime? @map("reset_password_expires_at")
+  fotoProfil              String?   @map("foto_profil") @db.Text
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  deletedAt               DateTime? @map("deleted_at")
+
+  // Relations
+  riwayatSewa     RiwayatSewa[]
+  tagihan         Tagihan[]
+  payment         Payment[]
+  laporan         Laporan[]
+  verifiedPayments Payment[] @relation("VerifiedBy")
+
+  @@map("users")
+}
+
+enum Role {
+  PEMILIK
+  PENGHUNI
+}
+
+// ==================== KATEGORI KAMAR ====================
+model KategoriKamar {
+  id            Int       @id @default(autoincrement())
+  idKost        Int?      @map("id_kost")
+  namaKategori  String    @unique @map("nama_kategori") @db.VarChar(255)
+  deskripsi     String?   @db.Text
+  hargaDasar    Decimal?  @map("harga_dasar") @db.Decimal(15, 2)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  kamar         Kamar[]
+
+  @@map("kategori_kamar")
+}
+
+// ==================== KAMAR ====================
+model Kamar {
+  id              Int       @id @default(autoincrement())
+  nomorKamar      String?   @map("nomor_kamar") @db.VarChar(50)
+  namaKamar       String    @unique @map("nama_kamar") @db.VarChar(255)
+  kategoriId      Int?      @map("kategori_id")
+  hargaPerBulan   Decimal?  @map("harga_per_bulan") @db.Decimal(15, 2)
+  hargaPerHarian  Decimal?  @map("harga_per_harian") @db.Decimal(15, 2)
+  luasKamar       Int?      @map("luas_kamar")
+  status          StatusKamar @default(TERSEDIA)
+  deskripsi       String?   @db.Text
+  stokKamar       Int?      @default(1) @map("stok_kamar")
+  lantai          Int?
+  fasilitasKamar  String?   @map("fasilitas_kamar") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  // Relations
+  kategori        KategoriKamar? @relation(fields: [kategoriId], references: [id])
+  fasilitasDetail FasilitasKamar[]
+  fotoKamar       FotoKamar[]
+  riwayatSewa     RiwayatSewa[]
+  inventori       InventoriKamar[]
+  laporan         Laporan[]
+
+  @@map("kamar")
+}
+
+enum StatusKamar {
+  TERSEDIA
+  TERISI
+  PERBAIKAN
+}
+
+// ==================== FASILITAS KAMAR ====================
+model FasilitasKamar {
+  id            Int       @id @default(autoincrement())
+  kamarId       Int       @map("kamar_id")
+  namaFasilitas String    @map("nama_fasilitas") @db.VarChar(255)
+  jumlah        Int?      @default(1)
+  kondisi       String?   @db.VarChar(50)
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  kamar         Kamar     @relation(fields: [kamarId], references: [id], onDelete: Cascade)
+
+  @@map("fasilitas_kamar")
+}
+
+// ==================== FOTO KAMAR ====================
+model FotoKamar {
+  id        Int       @id @default(autoincrement())
+  kamarId   Int       @map("kamar_id")
+  foto      String    @db.Text
+  caption   String?   @db.VarChar(255)
+  isPrimary Boolean   @default(false) @map("is_primary")
+  urutan    Int?      @default(0)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  kamar     Kamar     @relation(fields: [kamarId], references: [id], onDelete: Cascade)
+
+  @@map("foto_kamar")
+}
+
+// ==================== RIWAYAT SEWA ====================
+model RiwayatSewa {
+  id              Int       @id @default(autoincrement())
+  kodeSewa        String    @unique @map("kode_sewa") @db.VarChar(100)
+  userId          Int       @map("user_id")
+  kamarId         Int       @map("kamar_id")
+  tanggalMulai    DateTime  @map("tanggal_mulai") @db.Date
+  tanggalBerakhir DateTime  @map("tanggal_berakhir") @db.Date
+  durasiBulan     Int?      @map("durasi_bulan")
+  hargaSewa       Decimal?  @map("harga_sewa") @db.Decimal(15, 2)
+  deposit         Decimal?  @db.Decimal(15, 2)
+  status          StatusSewa @default(AKTIF)
+  catatan         String?   @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id])
+  kamar           Kamar     @relation(fields: [kamarId], references: [id])
+  tagihan         Tagihan[]
+  payment         Payment[]
+
+  @@map("riwayat_sewa")
+}
+
+enum StatusSewa {
+  AKTIF
+  SELESAI
+  DIBATALKAN
+}
+
+// ==================== TAGIHAN ====================
+model Tagihan {
+  id                Int       @id @default(autoincrement())
+  nomorTagihan      String    @unique @map("nomor_tagihan") @db.VarChar(100)
+  riwayatSewaId     Int       @map("riwayat_sewa_id")
+  userId            Int       @map("user_id")
+  jenisTagihan      String?   @map("jenis_tagihan") @db.VarChar(50)
+  nominal           Decimal   @db.Decimal(15, 2)
+  tanggalJatuhTempo DateTime  @map("tanggal_jatuh_tempo") @db.Date
+  status            StatusTagihan @default(BELUM_LUNAS)
+  keterangan        String?   @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  riwayatSewa       RiwayatSewa @relation(fields: [riwayatSewaId], references: [id])
+  user              User        @relation(fields: [userId], references: [id])
+  payment           Payment[]
+
+  @@map("tagihan")
+}
+
+enum StatusTagihan {
+  BELUM_LUNAS
+  LUNAS
+  JATUH_TEMPO
+}
+
+// ==================== PAYMENT ====================
+model Payment {
+  id              Int       @id @default(autoincrement())
+  kodePembayaran  String    @unique @map("kode_pembayaran") @db.VarChar(100)
+  tagihanId       Int       @map("tagihan_id")
+  userId          Int       @map("user_id")
+  riwayatSewaId   Int       @map("riwayat_sewa_id")
+  paymentMethod   String?   @map("payment_method") @db.VarChar(100)
+  paymentGateway  String?   @map("payment_gateway") @db.VarChar(100)
+  grossAmount     Decimal   @map("gross_amount") @db.Decimal(15, 2)
+  status          StatusPayment @default(PENDING)
+  transactionId   String?   @map("transaction_id") @db.VarChar(255)
+  vaNumber        String?   @map("va_number") @db.VarChar(255)
+  bank            String?   @db.VarChar(50)
+  snapToken       String?   @map("snap_token") @db.Text
+  snapRedirectUrl String?   @map("snap_redirect_url") @db.Text
+  paidAt          DateTime? @map("paid_at")
+  verifiedBy      Int?      @map("verified_by")
+  verifiedAt      DateTime? @map("verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tagihan         Tagihan     @relation(fields: [tagihanId], references: [id])
+  user            User        @relation(fields: [userId], references: [id])
+  riwayatSewa     RiwayatSewa @relation(fields: [riwayatSewaId], references: [id])
+  verifier        User?       @relation("VerifiedBy", fields: [verifiedBy], references: [id])
+
+  @@map("payment")
+}
+
+enum StatusPayment {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+  CANCEL
+}
+
+// ==================== KATEGORI BARANG ====================
+model KategoriBarang {
+  id            Int       @id @default(autoincrement())
+  namaKategori  String    @unique @map("nama_kategori") @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  namaBarang    NamaBarang[]
+  barang        Barang[]
+
+  @@map("kategori_barang")
+}
+
+// ==================== NAMA BARANG ====================
+model NamaBarang {
+  id          Int       @id @default(autoincrement())
+  kategoriId  Int       @map("id_kategori")
+  namaBarang  String    @map("nama_barang") @db.VarChar(255)
+
+  // Relations
+  kategori    KategoriBarang @relation(fields: [kategoriId], references: [id])
+  barang      Barang[]
+
+  @@map("nama_barang")
+}
+
+// ==================== BARANG ====================
+model Barang {
+  id            Int       @id @default(autoincrement())
+  namaBarangId  Int       @map("id_nama_barang")
+  kategoriId    Int       @map("kategori_id")
+  kondisi       String?   @db.VarChar(50)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  namaBarang    NamaBarang     @relation(fields: [namaBarangId], references: [id])
+  kategori      KategoriBarang @relation(fields: [kategoriId], references: [id])
+  inventori     InventoriKamar[]
+
+  @@map("barang")
+}
+
+// ==================== INVENTORI KAMAR ====================
+model InventoriKamar {
+  id        Int       @id @default(autoincrement())
+  kamarId   Int       @map("kamar_id")
+  barangId  Int       @map("barang_id")
+  jumlah    Int?      @default(1)
+  kondisi   String?   @db.VarChar(50)
+  catatan   String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  kamar     Kamar     @relation(fields: [kamarId], references: [id])
+  barang    Barang    @relation(fields: [barangId], references: [id])
+
+  @@map("inventori_kamar")
+}
+
+// ==================== LAPORAN ====================
+model Laporan {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @map("user_id")
+  kamarId       Int       @map("kamar_id")
+  jenisLaporan  String?   @map("jenis_laporan") @db.VarChar(100)
+  judul         String    @db.VarChar(255)
+  isiLaporan    String?   @map("isi_laporan") @db.Text
+  prioritas     Prioritas @default(NORMAL)
+  status        StatusLaporan @default(DIAJUKAN)
+  tanggalSelesai DateTime? @map("tanggal_selesai") @db.Date
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id])
+  kamar         Kamar     @relation(fields: [kamarId], references: [id])
+
+  @@map("laporan")
+}
+
+enum Prioritas {
+  RENDAH
+  NORMAL
+  TINGGI
+  URGENT
+}
+
+enum StatusLaporan {
+  DIAJUKAN
+  DIPROSES
+  SELESAI
+  DITOLAK
+}

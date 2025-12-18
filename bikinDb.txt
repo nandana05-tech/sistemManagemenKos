@@ -1,0 +1,249 @@
+1. TABLE USERS
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    no_telepon VARCHAR(50),
+    password VARCHAR(255),
+    role VARCHAR(50),
+    token VARCHAR(255),
+    is_active BOOLEAN,
+    verification_token VARCHAR(255),
+    email_verified_at TIMESTAMP,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP,
+    foto_profil TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+
+---
+
+2. TABLE KATEGORI_KAMAR
+CREATE TABLE kategori_kamar (
+    id SERIAL PRIMARY KEY,
+    id_kost INT,
+    nama_kategori VARCHAR(255) UNIQUE,
+    deskripsi TEXT,
+    harga_dasar DECIMAL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+---
+
+3. TABLE KAMAR
+CREATE TABLE kamar (
+    id SERIAL PRIMARY KEY,
+    nomor_kamar VARCHAR(50),
+    nama_kamar VARCHAR(255) UNIQUE,
+    kategori_id INT,
+    harga_per_bulan DECIMAL,
+    harga_per_harian DECIMAL,
+    luas_kamar INT,
+    status VARCHAR(50),
+    deskripsi TEXT,
+    stok_kamar INT,
+    lantai INT,
+    fasilitas_kamar TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    CONSTRAINT fk_kamar_kategori
+        FOREIGN KEY (kategori_id)
+        REFERENCES kategori_kamar(id)
+);
+
+---
+
+4. TABLE FASILITAS_KAMAR
+CREATE TABLE fasilitas_kamar (
+    id SERIAL PRIMARY KEY,
+    kamar_id INT,
+    nama_fasilitas VARCHAR(255),
+    jumlah INT,
+    kondisi VARCHAR(50),
+    created_at TIMESTAMP,
+    CONSTRAINT fk_fasilitas_kamar
+        FOREIGN KEY (kamar_id)
+        REFERENCES kamar(id)
+);
+
+---
+
+5. TABLE FOTO_KAMAR
+CREATE TABLE foto_kamar (
+    id SERIAL PRIMARY KEY,
+    kamar_id INT,
+    foto TEXT,
+    caption VARCHAR(255),
+    is_primary BOOLEAN,
+    urutan INT,
+    created_at TIMESTAMP,
+    CONSTRAINT fk_foto_kamar
+        FOREIGN KEY (kamar_id)
+        REFERENCES kamar(id)
+);
+
+---
+
+6. TABLE RIWAYAT_SEWA
+CREATE TABLE riwayat_sewa (
+    id SERIAL PRIMARY KEY,
+    kode_sewa VARCHAR(100) UNIQUE,
+    user_id INT,
+    kamar_id INT,
+    tanggal_mulai DATE,
+    tanggal_berakhir DATE,
+    durasi_bulan INT,
+    harga_sewa DECIMAL,
+    deposit DECIMAL,
+    status VARCHAR(50),
+    catatan TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_riwayat_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id),
+    CONSTRAINT fk_riwayat_kamar
+        FOREIGN KEY (kamar_id)
+        REFERENCES kamar(id)
+);
+
+---
+
+7. TABLE TAGIHAN
+CREATE TABLE tagihan (
+    id SERIAL PRIMARY KEY,
+    nomor_tagihan VARCHAR(100) UNIQUE,
+    riwayat_sewa_id INT,
+    user_id INT,
+    jenis_tagihan VARCHAR(50),
+    nominal DECIMAL,
+    tanggal_jatuh_tempo DATE,
+    status VARCHAR(50),
+    keterangan TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_tagihan_riwayat
+        FOREIGN KEY (riwayat_sewa_id)
+        REFERENCES riwayat_sewa(id),
+    CONSTRAINT fk_tagihan_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+);
+
+---
+
+8. TABLE PAYMENT
+CREATE TABLE payment (
+    id SERIAL PRIMARY KEY,
+    kode_pembayaran VARCHAR(100) UNIQUE,
+    tagihan_id INT,
+    user_id INT,
+    riwayat_sewa_id INT,
+    payment_method VARCHAR(100),
+    payment_gateway VARCHAR(100),
+    gross_amount DECIMAL,
+    status VARCHAR(50),
+    transaction_id VARCHAR(255),
+    va_number VARCHAR(255),
+    bank VARCHAR(50),
+    snap_token TEXT,
+    snap_redirect_url TEXT,
+    paid_at TIMESTAMP,
+    verified_by INT,
+    verified_at TIMESTAMP,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_payment_tagihan
+        FOREIGN KEY (tagihan_id)
+        REFERENCES tagihan(id),
+    CONSTRAINT fk_payment_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id),
+    CONSTRAINT fk_payment_riwayat
+        FOREIGN KEY (riwayat_sewa_id)
+        REFERENCES riwayat_sewa(id)
+);
+
+---
+
+9. TABLE KATEGORI_BARANG
+CREATE TABLE kategori_barang (
+    id SERIAL PRIMARY KEY,
+    nama_kategori VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP
+);
+
+---
+
+10. TABLE BARANG
+CREATE TABLE barang (
+    id SERIAL PRIMARY KEY,
+    id_nama_barang INT,
+    kategori_id INT,
+    kondisi VARCHAR(50),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_barang_kategori
+        FOREIGN KEY (kategori_id)
+        REFERENCES kategori_barang(id)
+);
+
+---
+
+11. TABLE NAMA_BARANG
+CREATE TABLE nama_barang (
+    id SERIAL PRIMARY KEY,
+    id_kategori INT,
+    nama_barang VARCHAR(255),
+    CONSTRAINT fk_nama_barang_kategori
+        FOREIGN KEY (id_kategori)
+        REFERENCES kategori_barang(id)
+);
+
+---
+
+12. TABLE INVENTORI_KAMAR
+CREATE TABLE inventori_kamar (
+    id SERIAL PRIMARY KEY,
+    kamar_id INT,
+    barang_id INT,
+    jumlah INT,
+    kondisi VARCHAR(50),
+    catatan TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_inventori_kamar
+        FOREIGN KEY (kamar_id)
+        REFERENCES kamar(id),
+    CONSTRAINT fk_inventori_barang
+        FOREIGN KEY (barang_id)
+        REFERENCES barang(id)
+);
+
+---
+
+13. TABLE LAPORAN
+
+CREATE TABLE laporan (
+    id SERIAL PRIMARY KEY,
+    user_id INT,
+    kamar_id INT,
+    jenis_laporan VARCHAR(100),
+    judul VARCHAR(255),
+    isi_laporan TEXT,
+    prioritas VARCHAR(50),
+    status VARCHAR(50),
+    tanggal_selesai DATE,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_laporan_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id),
+    CONSTRAINT fk_laporan_kamar
+        FOREIGN KEY (kamar_id)
+        REFERENCES kamar(id)
+);

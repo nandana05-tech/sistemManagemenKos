@@ -1,0 +1,254 @@
+Baik, berikut **pemetaan fitur per role (Pemilik & Penghuni)** yang **realistis dicapai dalam 1 bulan pengembangan** dan **selaras dengan ERD yang sudah Anda miliki** (users, kamar, inventori, tagihan, payment, laporan, dll).
+
+Saya **tidak menambah fitur di luar daftar Anda**, hanya memetakan **hak akses & tanggung jawab tiap role**.
+
+---
+
+# 🔐 Role dalam Sistem
+
+* **Pemilik (Owner/Admin Kost)**
+* **Penghuni (Tenant/User)**
+
+---
+
+## 1️⃣ Manajemen User (CRUD)
+
+### 👤 Pemilik
+
+✅ Tambah user (penghuni)
+✅ Lihat semua user
+✅ Ubah data user
+✅ Hapus / nonaktifkan user
+✅ Atur **role & status akun**
+
+**Contoh hak akses:**
+
+* Melihat daftar penghuni aktif
+* Reset password penghuni
+* Verifikasi akun
+
+---
+
+### 🧑‍🦱 Penghuni
+
+🔍 Lihat profil sendiri
+✏️ Ubah data pribadi (nama, kontak, foto profil)
+🚫 Tidak bisa CRUD user lain
+🚫 Tidak bisa ubah role
+
+---
+
+## 2️⃣ Manajemen Barang (Inventaris)
+
+### 👤 Pemilik
+
+✅ Tambah barang inventaris
+✅ Ubah data barang
+✅ Hapus barang
+✅ Lihat seluruh barang
+✅ Menentukan:
+
+* kamar
+* kategori
+* kondisi
+* status
+
+**Contoh:**
+
+* Kasur kamar A rusak
+* AC kamar B normal
+
+---
+
+### 🧑‍🦱 Penghuni
+
+🔍 Lihat barang di kamarnya
+🚫 Tidak bisa tambah / hapus barang
+🚫 Tidak bisa ubah kondisi langsung
+
+➡️ **Jika rusak → lewat laporan (fitur no. 6)**
+
+---
+
+## 3️⃣ Manajemen Kategori Barang
+
+### 👤 Pemilik
+
+✅ Tambah kategori barang
+✅ Ubah kategori
+✅ Hapus kategori
+✅ Melihat daftar kategori
+
+Contoh kategori:
+
+* Elektronik
+* Furnitur
+* Sanitasi
+
+---
+
+### 🧑‍🦱 Penghuni
+
+🔍 Lihat kategori (read-only)
+🚫 Tidak bisa CRUD kategori
+
+---
+
+## 4️⃣ Pembayaran
+
+### 👤 Pemilik
+
+🔍 Melihat semua pembayaran
+✅ Verifikasi pembayaran manual
+🔁 Sinkron status Midtrans
+📄 Melihat bukti pembayaran
+📊 Riwayat pembayaran seluruh penghuni
+
+Status:
+
+* pending
+* lunas
+* cancel
+
+---
+
+### 🧑‍🦱 Penghuni
+
+💳 Melakukan pembayaran sewa
+🔍 Melihat status pembayaran
+📄 Upload / lihat bukti pembayaran
+📜 Riwayat pembayaran pribadi
+
+---
+
+## 5️⃣ Tagihan Sewa
+
+### 👤 Pemilik
+
+✅ Generate tagihan otomatis per periode
+✏️ Ubah nominal / jatuh tempo
+🔍 Lihat semua tagihan
+📊 Monitoring tagihan belum lunas
+
+---
+
+### 🧑‍🦱 Penghuni
+
+🔍 Melihat tagihan sendiri
+⏰ Melihat jatuh tempo
+💳 Bayar tagihan
+📜 Riwayat tagihan pribadi
+
+---
+
+## 6️⃣ Laporan Barang Rusak oleh Penghuni
+
+### 🧑‍🦱 Penghuni
+
+✅ Buat laporan kerusakan
+✏️ Isi:
+
+* judul
+* deskripsi
+* foto pendukung
+  🔍 Melihat status laporan
+
+Status laporan:
+
+* diajukan
+* diproses
+* selesai
+
+---
+
+### 👤 Pemilik
+
+🔍 Melihat semua laporan
+✏️ Update status laporan
+🛠️ Tindak lanjut perbaikan
+📊 Riwayat laporan per kamar
+
+---
+
+## 7️⃣ Riwayat Aktivitas
+
+### 👤 Pemilik
+
+📜 Riwayat pembayaran semua penghuni
+📜 Riwayat penggunaan kamar
+📜 Riwayat laporan kerusakan
+
+➡️ Digunakan untuk:
+
+* audit
+* laporan bulanan
+* pengambilan keputusan
+
+---
+
+### 🧑‍🦱 Penghuni
+
+📜 Riwayat pembayaran pribadi
+📜 Riwayat sewa kamar
+📜 Riwayat laporan kerusakan sendiri
+
+---
+
+## 8️⃣ Informasi Kamar dan Fasilitas
+
+### 👤 Pemilik
+
+🏠 Lihat semua kamar
+✏️ Ubah status kamar:
+
+* tersedia
+* terisi
+* perbaikan
+  🔍 Detail fasilitas tiap kamar
+
+---
+
+### 🧑‍🦱 Penghuni
+
+🏠 Melihat kamar yang ditempati
+🔍 Melihat fasilitas kamar
+🔍 Melihat status kamar
+
+🚫 Tidak bisa mengubah data kamar
+
+---
+
+# 📌 Ringkasan Hak Akses
+
+| Fitur             | Pemilik            | Penghuni       |
+| ----------------- | ------------------ | -------------- |
+| Manajemen User    | ✅ CRUD semua       | 🔍 Edit profil |
+| Barang            | ✅ CRUD             | 🔍 Lihat       |
+| Kategori Barang   | ✅ CRUD             | 🔍             |
+| Pembayaran        | 🔍 + Verifikasi    | 💳 Bayar       |
+| Tagihan           | ✅ Generate         | 🔍 + Bayar     |
+| Laporan Rusak     | 🔍 + Tindak lanjut | ✅ Buat         |
+| Riwayat Aktivitas | 🔍 Semua           | 🔍 Pribadi     |
+| Kamar & Fasilitas | ✅ Kelola           | 🔍 Lihat       |
+
+---
+
+## ⏱️ Catatan Realistis 1 Bulan
+
+Dengan tim kecil / solo dev:
+
+* **Week 1**: Auth, role, user, kamar
+* **Week 2**: Inventaris, kategori, laporan
+* **Week 3**: Tagihan & Midtrans payment
+* **Week 4**: Riwayat, polishing, testing
+
+---
+
+Jika Anda mau, saya bisa:
+
+* ✅ Buat **use case diagram**
+* ✅ Buat **RBAC matrix (permission table)**
+* ✅ Susun **backlog sprint 1 bulan**
+* ✅ Mapping **API endpoint per role**
+
+Tinggal bilang mau yang mana.
