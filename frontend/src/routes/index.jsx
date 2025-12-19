@@ -52,6 +52,9 @@ const LaporanList = lazy(() => import('../pages/laporan/LaporanList'));
 const LaporanDetail = lazy(() => import('../pages/laporan/LaporanDetail'));
 const LaporanForm = lazy(() => import('../pages/laporan/LaporanForm'));
 
+// Homepage
+const Home = lazy(() => import('../pages/Home'));
+
 // Not Found
 const NotFound = lazy(() => import('../pages/NotFound'));
 
@@ -177,8 +180,8 @@ const AppRoutes = () => {
                     <Route path="/laporan/:id/edit" element={<LaporanForm />} />
                 </Route>
 
-                {/* Redirect root to dashboard or login */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                {/* Public Homepage */}
+                <Route path="/" element={<Home />} />
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />

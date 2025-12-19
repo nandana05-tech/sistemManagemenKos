@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../features/auth/authStore';
@@ -7,8 +7,12 @@ import { HiMail, HiLockClosed, HiEye, HiEyeOff } from 'react-icons/hi';
 
 const Login = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { login, isLoading } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
+
+    // Get redirect URL from query params, default to dashboard
+    const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
     const {
         register,
@@ -20,7 +24,7 @@ const Login = () => {
         try {
             await login(data.email, data.password);
             toast.success('Login berhasil!');
-            navigate('/dashboard');
+            navigate(redirectUrl);
         } catch (error) {
             toast.error(error.message || 'Login gagal');
         }

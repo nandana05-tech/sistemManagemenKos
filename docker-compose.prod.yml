@@ -17,6 +17,7 @@ services:
     restart: always
     environment:
       NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
     volumes:
       - backend_uploads:/app/uploads
     expose:
