@@ -83,6 +83,14 @@ SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
 EMAIL_FROM=noreply@yourdomain.com
+
+# ============================================
+# IMAGE COMPRESSION (Opsional)
+# ============================================
+IMAGE_QUALITY=80
+IMAGE_MAX_WIDTH=1920
+IMAGE_MAX_HEIGHT=1080
+IMAGE_FORMAT=webp
 ```
 
 ### Perbedaan Environment
@@ -421,6 +429,41 @@ EMAIL_FROM=noreply@yourdomain.com
 
 ---
 
+## 🖼️ Image Compression
+
+Sistem secara otomatis mengompres gambar yang diupload untuk menghemat storage dan mempercepat loading.
+
+### Fitur Kompresi
+
+| Fitur | Deskripsi |
+|-------|----------|
+| **Auto Resize** | Resize ke max 1920x1080px |
+| **WebP Conversion** | Convert ke format WebP (40-60% lebih kecil) |
+| **Quality Control** | Kualitas 80% (configurable) |
+| **All Upload Types** | Berlaku untuk profile, kamar, laporan, pembayaran |
+
+### Konfigurasi (Opsional)
+
+Tambahkan di `.env` jika ingin mengubah default:
+
+```env
+IMAGE_QUALITY=80        # Kualitas 1-100 (default: 80)
+IMAGE_MAX_WIDTH=1920    # Lebar maksimal dalam px (default: 1920)
+IMAGE_MAX_HEIGHT=1080   # Tinggi maksimal dalam px (default: 1080)
+IMAGE_FORMAT=webp       # Format output: webp, jpeg, png (default: webp)
+```
+
+### Hasil Kompresi
+
+Contoh hasil kompresi yang tercatat di log:
+```
+Image compressed: fotoKamar-xxx.jpg -> fotoKamar-xxx.webp (saved 97.6%)
+```
+
+> **Catatan:** Kompresi hanya berlaku untuk upload **baru**. Gambar yang sudah ada sebelum fitur ini aktif tidak akan dikompres otomatis.
+
+---
+
 ## 🛠️ Troubleshooting
 
 ### Gambar Tidak Muncul
@@ -493,6 +536,34 @@ docker logs kos-backend | grep -i email
 docker exec kos-backend env | grep SMTP
 ```
 
+### Sharp / Image Compression Error
+
+```bash
+# Test apakah sharp berfungsi
+docker exec kos-backend node -e "require('sharp'); console.log('Sharp OK')"
+
+# Jika error "Cannot find module 'sharp'", rebuild backend:
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache backend
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d backend
+
+# Jika error "out of memory", restart Docker Desktop:
+# Windows: wsl --shutdown (di PowerShell)
+# Lalu buka Docker Desktop lagi
+```
+
+### Upload File Gagal (413 Request Entity Too Large)
+
+**Penyebab:** Nginx membatasi ukuran upload.
+
+**Solusi:** Pastikan `nginx.conf` sudah ada:
+```nginx
+http {
+    # ...
+    client_max_body_size 50M;
+    # ...
+}
+```
+
 ---
 
 ## ✅ Production Checklist
@@ -527,6 +598,7 @@ Sebelum go-live, pastikan semua item berikut sudah dicek:
 - [ ] Login/Register berfungsi
 - [ ] Email verifikasi terkirim
 - [ ] Payment flow berjalan
+- [ ] Upload gambar berfungsi dan terkompres (cek log: "Image compressed")
 
 ---
 

@@ -26,6 +26,7 @@ router.delete('/kategori/:id', isPemilik, barangController.deleteKategoriBarang)
 // ==================== NAMA BARANG ====================
 router.get('/nama', isAuthenticated, barangController.getAllNamaBarang);
 router.post('/nama', isPemilik, validateZod(createNamaBarangSchema), barangController.createNamaBarang);
+router.put('/nama/:id', isPemilik, validateZod(createNamaBarangSchema), barangController.updateNamaBarang);
 router.delete('/nama/:id', isPemilik, barangController.deleteNamaBarang);
 
 // ==================== INVENTORI ====================

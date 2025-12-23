@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
+  console.log('Starting database seeding...');
 
   // Create Pemilik (Owner/Admin)
   const hashedPassword = await bcrypt.hash('admin123', 12);
@@ -22,7 +22,7 @@ async function main() {
       emailVerifiedAt: new Date(),
     },
   });
-  console.log(`✅ Created pemilik: ${pemilik.email}`);
+  console.log(`Created pemilik: ${pemilik.email}`);
 
   // Create sample Penghuni (Tenants)
   const penghuni1 = await prisma.user.upsert({
@@ -38,7 +38,7 @@ async function main() {
       emailVerifiedAt: new Date(),
     },
   });
-  console.log(`✅ Created penghuni: ${penghuni1.email}`);
+  console.log(`Created penghuni: ${penghuni1.email}`);
 
   const penghuni2 = await prisma.user.upsert({
     where: { email: 'penghuni2@example.com' },
@@ -53,7 +53,7 @@ async function main() {
       emailVerifiedAt: new Date(),
     },
   });
-  console.log(`✅ Created penghuni: ${penghuni2.email}`);
+  console.log(`Created penghuni: ${penghuni2.email}`);
 
   // Create Kategori Kamar
   const kategoriStandard = await prisma.kategoriKamar.upsert({
@@ -85,7 +85,7 @@ async function main() {
       hargaDasar: 4000000,
     },
   });
-  console.log('✅ Created kategori kamar');
+  console.log('Created kategori kamar');
 
   // Create Kamar - using upsert on unique namaKamar
   const kamar1 = await prisma.kamar.upsert({
@@ -151,7 +151,7 @@ async function main() {
       stokKamar: 1,
     },
   });
-  console.log('✅ Created kamar');
+  console.log('Created kamar');
 
   // Delete existing fasilitas first, then recreate
   await prisma.fasilitasKamar.deleteMany({
@@ -176,7 +176,7 @@ async function main() {
   ];
 
   await prisma.fasilitasKamar.createMany({ data: fasilitasData });
-  console.log('✅ Created fasilitas kamar');
+  console.log('Created fasilitas kamar');
 
   // Create Kategori Barang
   const kategoriElektronik = await prisma.kategoriBarang.upsert({
@@ -196,7 +196,7 @@ async function main() {
     update: {},
     create: { namaKategori: 'Perabotan' },
   });
-  console.log('✅ Created kategori barang');
+  console.log('Created kategori barang');
 
   // Skip nama barang if already exists to avoid conflicts
   const existingNamaBarang = await prisma.namaBarang.findFirst();
@@ -212,9 +212,9 @@ async function main() {
       { kategoriId: kategoriPerabotan.id, namaBarang: 'Cermin' },
     ];
     await prisma.namaBarang.createMany({ data: namaBarangData });
-    console.log('✅ Created nama barang');
+    console.log('Created nama barang');
   } else {
-    console.log('⏭️ Nama barang already exists, skipping');
+    console.log('Nama barang already exists, skipping');
   }
 
   // Check if riwayat sewa already exists
@@ -251,7 +251,7 @@ async function main() {
         status: 'AKTIF',
       },
     });
-    console.log('✅ Created riwayat sewa');
+    console.log('Created riwayat sewa');
 
     // Create Tagihan
     const currentDate = new Date();
@@ -282,9 +282,9 @@ async function main() {
         keterangan: 'Tagihan sewa bulan Desember 2024',
       },
     });
-    console.log('✅ Created tagihan');
+    console.log('Created tagihan');
   } else {
-    console.log('⏭️ Riwayat sewa already exists, skipping');
+    console.log('Riwayat sewa already exists, skipping');
   }
 
   // Check if laporan already exists
@@ -315,13 +315,13 @@ async function main() {
         status: 'DIPROSES',
       },
     });
-    console.log('✅ Created laporan');
+    console.log('Created laporan');
   } else {
-    console.log('⏭️ Laporan already exists, skipping');
+    console.log('Laporan already exists, skipping');
   }
 
-  console.log('🎉 Database seeding completed successfully!');
-  console.log('\n📋 Test Credentials:');
+  console.log('Database seeding completed successfully!');
+  console.log('\n Test Credentials:');
   console.log('   Pemilik: admin@kostmanagement.com / admin123');
   console.log('   Penghuni 1: penghuni1@example.com / password123');
   console.log('   Penghuni 2: penghuni2@example.com / password123');
@@ -329,7 +329,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+    console.error('Error during seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

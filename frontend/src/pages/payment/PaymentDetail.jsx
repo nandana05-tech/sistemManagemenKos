@@ -156,24 +156,36 @@ const PaymentDetail = () => {
                                     <p className="font-semibold text-gray-900">{payment.kodePembayaran}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 mb-1">Order ID</p>
-                                    <p className="font-medium text-gray-900">{payment.orderId}</p>
+                                    <p className="text-sm text-gray-500 mb-1">Transaction ID</p>
+                                    <p className="font-medium text-gray-900">
+                                        {payment.transactionId || (payment.verifiedBy ? 'Verifikasi Manual' : '-')}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500 mb-1">Payment Gateway</p>
-                                    <p className="text-gray-900 capitalize">{payment.paymentGateway || '-'}</p>
+                                    <p className="text-gray-900 capitalize">
+                                        {payment.paymentGateway || (payment.verifiedBy ? 'Manual' : (payment.transactionId ? 'Midtrans' : '-'))}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500 mb-1">Metode Pembayaran</p>
-                                    <p className="text-gray-900 capitalize">{payment.paymentMethod || '-'}</p>
+                                    <p className="text-gray-900 capitalize">
+                                        {payment.paymentMethod || (payment.verifiedBy ? 'Verifikasi Manual' : '-')}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500 mb-1">Tanggal Transaksi</p>
                                     <div className="flex items-center gap-2 text-gray-900">
                                         <HiCalendar className="w-5 h-5 text-gray-400" />
-                                        {formatDate(payment.transactionTime || payment.createdAt)}
+                                        {formatDate(payment.paidAt || payment.createdAt)}
                                     </div>
                                 </div>
+                                {payment.verifiedAt && (
+                                    <div>
+                                        <p className="text-sm text-gray-500 mb-1">Diverifikasi Pada</p>
+                                        <p className="text-gray-900">{formatDate(payment.verifiedAt)}</p>
+                                    </div>
+                                )}
                                 {payment.settlementTime && (
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1">Tanggal Settlement</p>

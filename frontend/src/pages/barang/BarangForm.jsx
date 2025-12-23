@@ -9,7 +9,12 @@ import {
     HiArrowLeft,
     HiSave,
     HiCube,
-    HiPlus
+    HiPlus,
+    HiPencil,
+    HiTrash,
+    HiX,
+    HiCheck,
+    HiExclamationCircle
 } from 'react-icons/hi';
 
 const BarangForm = () => {
@@ -35,6 +40,13 @@ const BarangForm = () => {
     const [selectedKategori, setSelectedKategori] = useState('');
     const [showNewNamaBarang, setShowNewNamaBarang] = useState(false);
     const [newNamaBarang, setNewNamaBarang] = useState('');
+
+    // State for managing nama barang
+    const [showManageNamaBarang, setShowManageNamaBarang] = useState(false);
+    const [editingNamaBarang, setEditingNamaBarang] = useState(null);
+    const [editNamaValue, setEditNamaValue] = useState('');
+    const [deletingId, setDeletingId] = useState(null);
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, namaBarang: null });
 
     const {
         register,
@@ -166,6 +178,50 @@ const BarangForm = () => {
         }
     };
 
+    const handleUpdateNamaBarang = async (id) => {
+        if (!editNamaValue.trim()) return;
+        try {
+            await barangService.updateNamaBarang(id, {
+                namaBarang: editNamaValue,
+                kategoriId: parseInt(selectedKategori)
+            });
+            toast.success('Nama barang berhasil diupdate');
+            setEditingNamaBarang(null);
+            setEditNamaValue('');
+            fetchNamaBarang(selectedKategori);
+        } catch (error) {
+            toast.error(error.message || 'Gagal update nama barang');
+        }
+    };
+
+    const openDeleteModal = (nb) => {
+        setDeleteModal({ isOpen: true, namaBarang: nb });
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({ isOpen: false, namaBarang: null });
+    };
+
+    const handleDeleteNamaBarang = async () => {
+        if (!deleteModal.namaBarang) return;
+        setDeletingId(deleteModal.namaBarang.id);
+        try {
+            await barangService.deleteNamaBarang(deleteModal.namaBarang.id);
+            toast.success('Nama barang berhasil dihapus');
+            fetchNamaBarang(selectedKategori);
+            closeDeleteModal();
+        } catch (error) {
+            toast.error(error.message || 'Gagal menghapus nama barang');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const startEditNamaBarang = (nb) => {
+        setEditingNamaBarang(nb.id);
+        setEditNamaValue(nb.namaBarang);
+    };
+
     if (isEdit && (isLoading || isFetching)) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -218,13 +274,28 @@ const BarangForm = () => {
                                 <div className="flex items-center justify-between mb-1">
                                     <label className="label mb-0">Nama Barang *</label>
                                     {selectedKategori && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowNewNamaBarang(!showNewNamaBarang)}
-                                            className="text-sm text-primary-600 hover:text-primary-700"
-                                        >
-                                            {showNewNamaBarang ? 'Pilih yang ada' : '+ Tambah baru'}
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowManageNamaBarang(!showManageNamaBarang);
+                                                    setShowNewNamaBarang(false);
+                                                }}
+                                                className="text-sm text-gray-600 hover:text-gray-700"
+                                            >
+                                                {showManageNamaBarang ? 'Tutup' : 'Kelola'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowNewNamaBarang(!showNewNamaBarang);
+                                                    setShowManageNamaBarang(false);
+                                                }}
+                                                className="text-sm text-primary-600 hover:text-primary-700"
+                                            >
+                                                {showNewNamaBarang ? 'Pilih yang ada' : '+ Tambah baru'}
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
 
@@ -245,6 +316,66 @@ const BarangForm = () => {
                                         >
                                             <HiPlus className="w-5 h-5" />
                                         </button>
+                                    </div>
+                                ) : showManageNamaBarang ? (
+                                    <div className="border border-gray-200 rounded-lg p-3 space-y-2 max-h-60 overflow-y-auto">
+                                        {namaBarang.length === 0 ? (
+                                            <p className="text-sm text-gray-500 text-center py-2">
+                                                Belum ada nama barang. Tambahkan baru dengan tombol "+ Tambah baru"
+                                            </p>
+                                        ) : (
+                                            namaBarang.map((nb) => (
+                                                <div key={nb.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                                                    {editingNamaBarang === nb.id ? (
+                                                        <>
+                                                            <input
+                                                                type="text"
+                                                                className="input flex-1 py-1"
+                                                                value={editNamaValue}
+                                                                onChange={(e) => setEditNamaValue(e.target.value)}
+                                                                autoFocus
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleUpdateNamaBarang(nb.id)}
+                                                                className="p-1.5 text-green-600 hover:bg-green-100 rounded"
+                                                            >
+                                                                <HiCheck className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setEditingNamaBarang(null);
+                                                                    setEditNamaValue('');
+                                                                }}
+                                                                className="p-1.5 text-gray-600 hover:bg-gray-200 rounded"
+                                                            >
+                                                                <HiX className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="flex-1 text-sm text-gray-900">{nb.namaBarang}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => startEditNamaBarang(nb)}
+                                                                className="p-1.5 text-blue-600 hover:bg-blue-100 rounded"
+                                                            >
+                                                                <HiPencil className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openDeleteModal(nb)}
+                                                                disabled={deletingId === nb.id}
+                                                                className="p-1.5 text-red-600 hover:bg-red-100 rounded disabled:opacity-50"
+                                                            >
+                                                                <HiTrash className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 ) : (
                                     <select
@@ -364,6 +495,54 @@ const BarangForm = () => {
                     </div>
                 </form>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {deleteModal.isOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl transform transition-all">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <HiExclamationCircle className="w-10 h-10 text-red-600" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                Hapus Nama Barang?
+                            </h3>
+                            <p className="text-gray-500 mb-6">
+                                Anda yakin ingin menghapus <strong className="text-gray-900">"{deleteModal.namaBarang?.namaBarang}"</strong>?
+                                Tindakan ini tidak dapat dibatalkan.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={closeDeleteModal}
+                                    disabled={deletingId}
+                                    className="btn-outline flex-1"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteNamaBarang}
+                                    disabled={deletingId}
+                                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                                >
+                                    {deletingId ? (
+                                        <>
+                                            <span className="spinner w-4 h-4"></span>
+                                            Menghapus...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <HiTrash className="w-5 h-5" />
+                                            Ya, Hapus
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -46,6 +46,13 @@ export const barangService = {
   },
 
   /**
+   * Update nama barang (Pemilik only)
+   */
+  updateNamaBarang: async (id, data) => {
+    return api.put(`/barang/nama/${id}`, data);
+  },
+
+  /**
    * Delete nama barang (Pemilik only)
    */
   deleteNamaBarang: async (id) => {

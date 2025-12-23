@@ -84,6 +84,19 @@ const createNamaBarang = async (req, res, next) => {
 };
 
 /**
+ * Update nama barang
+ * PUT /api/barang/nama/:id
+ */
+const updateNamaBarang = async (req, res, next) => {
+  try {
+    const namaBarang = await barangService.updateNamaBarang(req.params.id, req.body);
+    return success(res, 'Nama barang berhasil diupdate', namaBarang);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Delete nama barang
  * DELETE /api/barang/nama/:id
  */
@@ -230,6 +243,7 @@ module.exports = {
   // Nama Barang
   getAllNamaBarang,
   createNamaBarang,
+  updateNamaBarang,
   deleteNamaBarang,
   // Barang
   getAllBarang,

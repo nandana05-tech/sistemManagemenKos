@@ -197,11 +197,18 @@ const getTagihanSummary = async (userId = null, role = null) => {
     prisma.tagihan.count({ where }),
     prisma.tagihan.count({ where: { ...where, status: 'BELUM_LUNAS' } }),
     prisma.tagihan.count({ where: { ...where, status: 'LUNAS' } }),
+    // Count tagihan with JATUH_TEMPO status (from failed/expired/cancelled payments)
+    // OR tagihan that are BELUM_LUNAS but past due date
     prisma.tagihan.count({
       where: {
         ...where,
-        status: 'BELUM_LUNAS',
-        tanggalJatuhTempo: { lt: new Date() }
+        OR: [
+          { status: 'JATUH_TEMPO' },
+          {
+            status: 'BELUM_LUNAS',
+            tanggalJatuhTempo: { lt: new Date() }
+          }
+        ]
       }
     })
   ]);

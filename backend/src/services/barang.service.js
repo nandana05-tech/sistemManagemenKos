@@ -82,9 +82,30 @@ const createNamaBarang = async (data) => {
 };
 
 /**
+ * Update nama barang
+ */
+const updateNamaBarang = async (id, data) => {
+  const namaBarang = await prisma.namaBarang.update({
+    where: { id: parseInt(id) },
+    data,
+    include: { kategori: { select: { namaKategori: true } } }
+  });
+  return namaBarang;
+};
+
+/**
  * Delete nama barang
  */
 const deleteNamaBarang = async (id) => {
+  // Check if nama barang is being used by any barang
+  const barangCount = await prisma.barang.count({
+    where: { namaBarangId: parseInt(id) }
+  });
+
+  if (barangCount > 0) {
+    throw { statusCode: 400, message: 'Nama barang tidak dapat dihapus karena masih digunakan oleh barang lain' };
+  }
+
   await prisma.namaBarang.delete({
     where: { id: parseInt(id) }
   });
@@ -396,6 +417,7 @@ module.exports = {
   // Nama Barang
   getAllNamaBarang,
   createNamaBarang,
+  updateNamaBarang,
   deleteNamaBarang,
   // Barang
   getAllBarang,

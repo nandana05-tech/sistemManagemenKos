@@ -93,12 +93,12 @@ const KamarForm = () => {
                 nomorKamar: data.nomorKamar || undefined,
                 deskripsi: data.deskripsi || undefined,
                 status: data.status || 'TERSEDIA',
+                hargaPerHarian: 1, // Default value
+                stokKamar: 1, // Default value
                 ...(data.kategoriId && { kategoriId: parseInt(data.kategoriId) }),
                 ...(data.hargaPerBulan && { hargaPerBulan: parseFloat(data.hargaPerBulan) }),
-                ...(data.hargaPerHarian && { hargaPerHarian: parseFloat(data.hargaPerHarian) }),
                 ...(data.luasKamar && { luasKamar: parseInt(data.luasKamar) }),
-                ...(data.lantai && { lantai: parseInt(data.lantai) }),
-                ...(data.stokKamar && { stokKamar: parseInt(data.stokKamar) })
+                ...(data.lantai && { lantai: parseInt(data.lantai) })
             };
 
             let kamarId;
@@ -276,28 +276,17 @@ const KamarForm = () => {
                                 <h3 className="font-semibold text-gray-900">Harga & Spesifikasi</h3>
                             </div>
                             <div className="card-body space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="label">Harga per Bulan (Rp)</label>
-                                        <input
-                                            type="number"
-                                            className="input"
-                                            placeholder="1500000"
-                                            {...register('hargaPerBulan')}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="label">Harga per Hari (Rp)</label>
-                                        <input
-                                            type="number"
-                                            className="input"
-                                            placeholder="100000"
-                                            {...register('hargaPerHarian')}
-                                        />
-                                    </div>
+                                <div>
+                                    <label className="label">Harga per Bulan (Rp)</label>
+                                    <input
+                                        type="number"
+                                        className="input"
+                                        placeholder="1500000"
+                                        {...register('hargaPerBulan')}
+                                    />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="label">Luas Kamar (m²)</label>
                                         <input
@@ -314,15 +303,6 @@ const KamarForm = () => {
                                             className="input"
                                             placeholder="1"
                                             {...register('lantai')}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="label">Stok Kamar</label>
-                                        <input
-                                            type="number"
-                                            className="input"
-                                            placeholder="1"
-                                            {...register('stokKamar')}
                                         />
                                     </div>
                                 </div>

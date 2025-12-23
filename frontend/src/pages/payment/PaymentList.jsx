@@ -13,6 +13,7 @@ import {
     HiClock,
     HiX,
     HiExclamation,
+    HiExclamationCircle,
     HiChevronLeft,
     HiChevronRight,
     HiEye,
@@ -34,6 +35,7 @@ const PaymentList = () => {
         limit: 10
     });
     const [checkingId, setCheckingId] = useState(null);
+    const [cancelModal, setCancelModal] = useState({ isOpen: false, paymentId: null, isLoading: false });
 
     const fetchPayments = async () => {
         setIsLoading(true);
@@ -136,16 +138,25 @@ const PaymentList = () => {
         }
     };
 
-    const handleCancelPayment = async (paymentId) => {
-        if (!confirm('Apakah Anda yakin ingin membatalkan pembayaran ini?')) {
-            return;
-        }
+    const openCancelModal = (paymentId) => {
+        setCancelModal({ isOpen: true, paymentId, isLoading: false });
+    };
+
+    const closeCancelModal = () => {
+        setCancelModal({ isOpen: false, paymentId: null, isLoading: false });
+    };
+
+    const handleCancelPayment = async () => {
+        setCancelModal(prev => ({ ...prev, isLoading: true }));
         try {
-            await paymentService.cancel(paymentId);
+            await paymentService.cancel(cancelModal.paymentId);
             toast.success('Pembayaran berhasil dibatalkan');
+            closeCancelModal();
             fetchPayments();
+            fetchSummary();
         } catch (error) {
             toast.error(error.message || 'Gagal membatalkan pembayaran');
+            setCancelModal(prev => ({ ...prev, isLoading: false }));
         }
     };
 
@@ -375,7 +386,7 @@ const PaymentList = () => {
                                                 {/* Cancel button for PENDING payments */}
                                                 {payment.status === 'PENDING' && (
                                                     <button
-                                                        onClick={() => handleCancelPayment(payment.id)}
+                                                        onClick={() => openCancelModal(payment.id)}
                                                         className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 rounded text-sm inline-flex items-center gap-1"
                                                         title="Batalkan pembayaran"
                                                     >
@@ -431,6 +442,58 @@ const PaymentList = () => {
                         >
                             <HiChevronRight className="w-5 h-5" />
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Cancel Confirmation Modal */}
+            {cancelModal.isOpen && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                        {/* Backdrop */}
+                        <div
+                            className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+                            onClick={closeCancelModal}
+                        ></div>
+
+                        {/* Modal */}
+                        <div className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                                <HiExclamationCircle className="w-6 h-6 text-red-600" />
+                            </div>
+
+                            <h3 className="text-lg font-semibold text-center text-gray-900 mb-2">
+                                Batalkan Pembayaran?
+                            </h3>
+
+                            <p className="text-sm text-center text-gray-500 mb-6">
+                                Apakah Anda yakin ingin membatalkan pembayaran ini? Tagihan dan data sewa terkait juga akan dihapus. Tindakan ini tidak dapat dibatalkan.
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeCancelModal}
+                                    disabled={cancelModal.isLoading}
+                                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                                >
+                                    Tidak, Kembali
+                                </button>
+                                <button
+                                    onClick={handleCancelPayment}
+                                    disabled={cancelModal.isLoading}
+                                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                                >
+                                    {cancelModal.isLoading ? (
+                                        <>
+                                            <span className="spinner w-4 h-4 border-white"></span>
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        'Ya, Batalkan'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

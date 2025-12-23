@@ -240,14 +240,6 @@ const TagihanList = () => {
                 </div>
                 {isPemilik && (
                     <div className="flex gap-2">
-                        <button
-                            onClick={handleGenerateMonthly}
-                            disabled={isGenerating}
-                            className="btn-outline inline-flex items-center gap-2"
-                        >
-                            <HiRefresh className={`w-5 h-5 ${isGenerating ? 'animate-spin' : ''}`} />
-                            Generate Bulanan
-                        </button>
                         <Link to="/tagihan/new" className="btn-primary inline-flex items-center gap-2">
                             <HiPlus className="w-5 h-5" />
                             Buat Tagihan
